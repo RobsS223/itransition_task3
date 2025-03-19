@@ -103,7 +103,7 @@ dotnet run 1,2,3,4,5 1,2,three,4,5,6 7,8,9,10,11,12
 
 ## 📹 Video Demonstration
 
-Check out the detailed [Video Demonstration](<Insert Video Link Here>), covering:
+Check out the detailed [Video Demonstration](https://www.youtube.com/watch?v=3Dkv-bRjPGU), covering:
 
 - Application with various dice configurations.
 - Handling incorrect parameters.
