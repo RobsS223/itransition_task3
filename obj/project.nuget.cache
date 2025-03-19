@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "2emm85Q2VwU=",
+  "success": true,
+  "projectFilePath": "/Users/robbiesaakyan/Desktop/task3_DiceGame/task3_DiceGame.csproj",
+  "expectedPackageFiles": [
+    "/Users/robbiesaakyan/.nuget/packages/consoletables/2.6.2/consoletables.2.6.2.nupkg.sha512",
+    "/Users/robbiesaakyan/.nuget/packages/sha3.net/2.0.0/sha3.net.2.0.0.nupkg.sha512",
+    "/Users/robbiesaakyan/.nuget/packages/wcwidth/1.0.0/wcwidth.1.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
