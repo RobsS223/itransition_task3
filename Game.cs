@@ -13,10 +13,7 @@ public class Game(List<Dice> diceList)
         fairGen.Generate(2);
         Console.WriteLine($"I selected a random value in the range 0..1 (HMAC={fairGen.Hmac}).");
         Console.WriteLine("Try to guess my selection.");
-        Console.WriteLine("0 - 0");
-        Console.WriteLine("1 - 1");
-        Console.WriteLine("X - exit");
-        Console.WriteLine("? - help");
+        Console.WriteLine("0 - 0\n1 - 1\nX - exit\n? - help");
         var userChoice = FairProtocol.GetUserInput("Your selection: ", 2);
         fairGen.Reveal();
         var firstResult = (fairGen.Number + userChoice) % 2;
@@ -37,14 +34,11 @@ public class Game(List<Dice> diceList)
         Console.WriteLine("Available dice:");
         for (var i = 0; i < _diceList.Count; i++)
             Console.WriteLine($"{i} - {_diceList[i]}");
-        var selection = FairProtocol.GetUserInput(
-            "Choose your dice (index, ? for help): ",
-            _diceList.Count,
-            () => TablePrinter.PrintProbabilityTable(_diceList)
-        );
+        var selection = FairProtocol.GetUserInput("Choose your dice (index, ? for help): ", _diceList.Count, 
+            () => TablePrinter.PrintProbabilityTable(_diceList));
         _userDice = _diceList[selection];
         _diceList.RemoveAt(selection);
-        
+
         var bestIdx = 0;
         var bestAvg = -1.0;
         for (var i = 0; i < _diceList.Count; i++)
@@ -58,7 +52,7 @@ public class Game(List<Dice> diceList)
         }
         _computerDice = _diceList[bestIdx];
         _diceList.RemoveAt(bestIdx);
-        
+
         Console.WriteLine($"You chose: {_userDice}");
         Console.WriteLine($"Computer chose: {_computerDice}");
         PlayDiceRolls();
@@ -83,11 +77,8 @@ public class Game(List<Dice> diceList)
         Console.WriteLine("Available dice:");
         for (var i = 0; i < _diceList.Count; i++)
             Console.WriteLine($"{i} - {_diceList[i]}");
-        var selection = FairProtocol.GetUserInput(
-            "Choose your dice (index, ? for help): ",
-            _diceList.Count,
-            () => TablePrinter.PrintProbabilityTable(_diceList)
-        );
+        var selection = FairProtocol.GetUserInput("Choose your dice (index, ? for help): ", _diceList.Count, 
+            () => TablePrinter.PrintProbabilityTable(_diceList));
         _userDice = _diceList[selection];
         _diceList.RemoveAt(selection);
         Console.WriteLine($"You chose: {_userDice}");
@@ -96,60 +87,51 @@ public class Game(List<Dice> diceList)
 
     private void PlayDiceRolls()
     {
-        if (_computerDice is null)
-            throw new Exception("Computer dice is not selected.");
-        if (_userDice is null)
-            throw new Exception("User dice is not selected.");
-            
         Console.WriteLine("---- Computer's roll ----");
-        var compResult = PerformRoll(_computerDice, false);
+        var computerRoll = PerformFairRoll(_computerDice);
+
         Console.WriteLine("---- Your roll ----");
-        var userResult = PerformRoll(_userDice, true);
-        Console.WriteLine($"Computer roll result: {compResult}");
-        Console.WriteLine($"Your roll result: {userResult}");
-        if (userResult > compResult)
-            Console.WriteLine($"You win ({userResult} > {compResult})!");
-        else if (compResult > userResult)
-            Console.WriteLine($"Computer wins ({compResult} > {userResult})!");
+        var userRoll = PerformFairRoll(_userDice);
+
+        Console.WriteLine($"Computer roll result: {computerRoll}");
+        Console.WriteLine($"Your roll result: {userRoll}");
+
+        if (userRoll > computerRoll)
+            Console.WriteLine($"You win! ({userRoll} > {computerRoll})");
+        else if (computerRoll > userRoll)
+            Console.WriteLine($"Computer wins! ({computerRoll} > {userRoll})");
         else
             Console.WriteLine("It's a tie!");
     }
 
-    private int PerformRoll(Dice dice, bool userRoll)
+    private int PerformFairRoll(Dice? dice)
     {
-        var range = dice.Faces.Count;
+        if (dice is null)
+            throw new Exception("Dice was not selected.");
+
+        var facesCount = dice.Faces.Count;
         var fairGen = new FairRandomGenerator();
-        fairGen.Generate(range);
-        Console.WriteLine($"I selected a random value in the range 0..{range - 1} (HMAC={fairGen.Hmac}).");
-        if (userRoll)
-        {
-            Console.WriteLine("Add your number modulo " + range + ".");
-            for (var i = 0; i < range; i++)
-                Console.WriteLine($"{i} - {i}");
-            Console.WriteLine("X - exit");
-            Console.WriteLine("? - help");
-            var userInput = FairProtocol.GetUserInput("Your selection: ", range, 
-                () => Console.WriteLine($"Enter an integer between 0 and {range - 1}."));
-            fairGen.Reveal();
-            var result = (fairGen.Number + userInput) % range;
-            Console.WriteLine($"The fair number generation result is {fairGen.Number} + {userInput} = {result} (mod {range}).");
-            var faceValue = dice.Faces[result];
-            Console.WriteLine($"Dice face value: {faceValue}");
-            return faceValue;
-        }
-        else
-        {
-            fairGen.Reveal();
-            var result = fairGen.Number % range;
-            Console.WriteLine($"The fair number generation result is {fairGen.Number} (mod {range}) = {result}.");
-            var faceValue = dice.Faces[result];
-            Console.WriteLine($"Dice face value: {faceValue}");
-            return faceValue;
-        }
+        fairGen.Generate(facesCount);
+        
+        Console.WriteLine($"I selected a random value in the range 0..{facesCount - 1} (HMAC={fairGen.Hmac}).");
+        Console.WriteLine("Please, enter your number to ensure fairness:");
+        for (var i = 0; i < facesCount; i++)
+            Console.WriteLine($"{i} - {i}");
+        Console.WriteLine("X - exit");
+        Console.WriteLine("? - help");
+
+        var userInput = FairProtocol.GetUserInput("Your selection: ", facesCount,
+            () => Console.WriteLine($"Enter number 0 to {facesCount - 1}"));
+
+        fairGen.Reveal();
+
+        var finalResult = (fairGen.Number + userInput) % facesCount;
+        Console.WriteLine($"The fair number generation result is {fairGen.Number} + {userInput} = {finalResult} (mod {facesCount}).");
+        
+        var faceValue = dice.Faces[finalResult];
+        Console.WriteLine($"Dice face value: {faceValue}");
+        return faceValue;
     }
 
-    private static double GetAverage(Dice dice)
-    {
-        return dice.Faces.Average();
-    }
+    private double GetAverage(Dice dice) => dice.Faces.Average();
 }
